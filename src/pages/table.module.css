@@ -1,0 +1,14 @@
+.Maintable {
+  text-align: center;
+  width: 80%;
+  padding: 30px;
+  margin: 0 auto;
+  position: absolute;
+  top: 20%;
+  left: 10%;
+}
+
+.createbtn {
+  margin-left: 500px;
+  margin-bottom: 20px;
+}

@@ -1,0 +1,28 @@
+.add-form {
+  max-width: 300px;
+}
+.add-form-forgot {
+  float: right;
+}
+.ant-col-rtl .add-form-forgot {
+  float: left;
+}
+.add-form-button {
+  width: 100%;
+}
+.register {
+  padding-top: 20px;
+}
+
+.center {
+  text-align: center;
+  width: 300px;
+  margin: 0 auto;
+  position: absolute;
+  top: 27%;
+  left: 40%;
+}
+
+h2 {
+  color: blueviolet;
+}
