@@ -1,2 +1,2 @@
 export const API_URL =
-  "https://crudcrud.com/api/92b3a325b634473da72918fcc9aaca78/data";
+  "https://crudcrud.com/api/58e28cc11e36425aa152a4e1d631a9cb/data";
