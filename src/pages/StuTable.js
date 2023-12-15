@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Space, Table, Modal, Button, Input, Form, message } from "antd";
+import {
+  Space,
+  Table,
+  Modal,
+  Button,
+  Input,
+  Form,
+  message,
+  ConfigProvider,
+} from "antd";
 import classes from "./table.module.css";
 import { API_URL } from "../ApiConfig";
+import { useTheme } from "../ThemeProvider";
 
 const { Column, ColumnGroup } = Table; //destructuring the Column component from the Table component.
 
@@ -10,10 +20,13 @@ const StuTable = () => {
   const [form] = Form.useForm();
   const [createdData, setCreatedData] = useState([]);
   const [editData, setEditData] = useState(null);
+  const [pageSize, setPageSize] = useState(5); // Number of items to display per page
+  const [currentPage, setCurrentPage] = useState(1); // Current page
+  const { theme } = useTheme();
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [currentPage, pageSize]);
 
   const fetchData = async () => {
     try {
@@ -25,13 +38,18 @@ const StuTable = () => {
     }
   };
 
+  //updating the createdData state with the filtered data.
+  const updateFromData = (data) => {
+    setCreatedData(data);
+  };
+
   //DELETE
   const handleDelete = async (id) => {
     try {
       await fetch(`${API_URL}/${id}`, {
         method: "DELETE",
       });
-      fetchData();
+      updateFromData(createdData.filter((item) => item._id !== id)); //If the _id of the item is not equal to idToRemove, it includes that item in the filteredItems array
     } catch (error) {
       console.error("Error deleting data: ", error);
     }
@@ -86,9 +104,12 @@ const StuTable = () => {
       if (response.ok) {
         const responseData = await response.json();
         console.log("Data created successfully:", responseData);
+
+        // Update the component state with the newly created data
+        setCreatedData([...createdData, responseData]);
+
         form.resetFields();
         setIsModalVisible(false);
-        fetchData();
       } else {
         console.error("Error creating data:", response.statusText);
       }
@@ -109,12 +130,16 @@ const StuTable = () => {
       });
 
       if (response.ok) {
-        const responseData = response.body;
+        const responseData = await response.json();
         console.log("Data updated successfully:", responseData);
+
+        //Update the component state with the updated data
+        updateFromData(
+          createdData.map((item) => (item._id === id ? responseData : item))
+        );
+
         form.resetFields();
-        setIsModalVisible(false); // Close the modal
-        fetchData(); // Refresh the table
-      } else {
+        setIsModalVisible(false);
         console.error("Error updating data:", response.statusText);
       }
     } catch (error) {
@@ -129,97 +154,167 @@ const StuTable = () => {
     }
   }, [editData, form]); //effect should be triggered when either editData or form changes.
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size, page) => {
+    setCurrentPage(1); // Reset the current page to the first page when changing page size
+    setPageSize(size);
+  };
+
+  // Define the pagination configuration
+  const pagination = {
+    pageSize, // Number of items to display per page
+    current: currentPage, // Current page
+    total: createdData.length, // Total number of items
+    onChange: handlePageChange, // Handle page change
+    onShowSizeChange: handlePageSizeChange, // Handle page size change
+  };
+
+  const lightTheme = {
+    colorBgBase: "white",
+    colorTextBase: "black",
+  };
+
+  const darkTheme = {
+    colorBgBase: "rgba(0, 0, 0, 0.85)",
+    colorTextBase: "#ffccc7",
+    Button: "red",
+    backgroundColor: "#007bff",
+  };
+
   return (
-    <div className={classes.Maintable}>
-      <Button type="primary" className={classes.createbtn} onClick={openModal}>
-        Create
-      </Button>
-
-      {/* MODULE */}
-      <Modal
-        title={editData ? "Edit Entry" : "Create New Entry"}
-        open={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        {/* FROM */}
-        <Form form={form} onFinish={onFinish}>
-          <Form.Item
-            name="firstName"
-            label="First Name"
-            rules={[{ required: true, message: "Please enter first name" }]}
+    <>
+      <div className={classes.Maintable}>
+        {/* Table */}
+        <ConfigProvider
+          theme={{
+            token: theme === "dark" ? darkTheme : lightTheme,
+          }}
+        >
+          {/* MODULE */}
+          <Modal
+            title={editData ? "Edit Entry" : "Create New Entry"}
+            open={isModalVisible}
+            onCancel={handleCancel}
+            footer={null}
           >
-            <Input />
-          </Form.Item>
+            {/* FROM */}
+            <Form form={form} onFinish={onFinish}>
+              <Form.Item
+                name="firstName"
+                label="First Name"
+                rules={[{ required: true, message: "Please enter first name" }]}
+              >
+                <Input />
+              </Form.Item>
 
-          <Form.Item
-            name="lastName"
-            label="Last Name"
-            rules={[{ required: true, message: "Please enter last name" }]}
-          >
-            <Input />
-          </Form.Item>
+              <Form.Item
+                name="lastName"
+                label="Last Name"
+                rules={[{ required: true, message: "Please enter last name" }]}
+              >
+                <Input />
+              </Form.Item>
 
-          <Form.Item
-            name="age"
-            label="Age"
-            rules={[{ required: true, message: "Please enter age" }]}
-          >
-            <Input />
-          </Form.Item>
+              <Form.Item
+                name="age"
+                label="Age"
+                rules={[{ required: true, message: "Please enter age" }]}
+              >
+                <Input />
+              </Form.Item>
 
-          <Form.Item
-            name="address"
-            label="Address"
-            rules={[{ required: true, message: "Please enter address" }]}
-          >
-            <Input />
-          </Form.Item>
+              <Form.Item
+                name="address"
+                label="Address"
+                rules={[{ required: true, message: "Please enter address" }]}
+              >
+                <Input />
+              </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit">
-              Submit
+              <Form.Item>
+                <Button type="primary" htmlType="submit">
+                  Submit
+                </Button>
+              </Form.Item>
+            </Form>
+          </Modal>
+
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              type="primary"
+              className={classes.createbtn}
+              onClick={openModal}
+              style={{
+                backgroundColor: theme === "dark" ? "#820014" : "#007bff",
+              }}
+            >
+              Create
             </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
+          </div>
 
-      {/* Table */}
-      <Table
-        dataSource={createdData.map((item, index) => ({ ...item, key: index }))}
-      >
-        <Column title="First Name" dataIndex="firstName" key="firstName" />
-        <Column title="Last Name" dataIndex="lastName" key="lastName" />
-        <Column title="Age" dataIndex="age" key="age" />
-        <Column title="Address" dataIndex="address" key="address" />
+          <Table
+            dataSource={createdData.map((item, index) => ({
+              ...item,
+              key: index,
+            }))}
+            pagination={pagination}
+            style={{
+              borderColor: theme === "dark" ? "white" : "black", // Set the border color based on the theme
+            }}
+            scroll={{ y: true }}
+          >
+            <Column
+              title="First Name"
+              dataIndex="firstName"
+              key="firstName"
+              style={{ backgroundColor: "red" }}
+            />
+            <Column title="Last Name" dataIndex="lastName" key="lastName" />
+            <Column title="Age" dataIndex="age" key="age" />
+            <Column title="Address" dataIndex="address" key="address" />
 
-        <ColumnGroup
-          title="Action"
-          key="action"
-          render={(_, record) => (
-            <Space size="middle">
-              <Button
-                type="primary"
-                style={{ background: "#7cb305", borderColor: "#7cb305" }}
-                onClick={() => {
-                  setEditData(record);
-                  openModal(record);
-                }}
-              >
-                Edit
-              </Button>
-              <Button
-                type="primary"
-                danger
-                onClick={() => showDeleteModal(record)}
-              >
-                Delete
-              </Button>
-            </Space>
-          )}
-        />
-      </Table>
-    </div>
+            <ColumnGroup
+              title="Action"
+              key="action"
+              render={(_, record) => (
+                <Space size="middle">
+                  <Button
+                    type="primary"
+                    style={{
+                      background: "none",
+                      color:
+                        theme === "dark"
+                          ? darkTheme.colorTextBase
+                          : lightTheme.colorTextBase,
+                    }}
+                    onClick={() => {
+                      setEditData(record);
+                      openModal(record);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="primary"
+                    style={{
+                      background: "none",
+                      color: theme === "dark" ? darkTheme.colorTextBase : "red",
+                    }}
+                    danger
+                    onClick={() => showDeleteModal(record)}
+                  >
+                    Delete
+                  </Button>
+                </Space>
+              )}
+            />
+          </Table>
+        </ConfigProvider>
+      </div>
+    </>
   );
 };
 
