@@ -1,0 +1,60 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap");
+
+.loginContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  flex-direction: row;
+  text-align: center;
+  background: white;
+}
+.leftSection,
+.rightSection {
+  width: 50%;
+  height: 100%;
+}
+
+.leftSection {
+  background-color: #001529;
+}
+
+.center {
+  width: 375px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+@media only screen and (max-width: 768px) {
+  .loginContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .center,
+  .login-form {
+    width: 80vw;
+    max-width: 300px;
+    margin-bottom: 20px;
+  }
+
+  .loginImage {
+    width: 80vw;
+    max-width: 360px;
+    margin-bottom: 20px;
+    margin-right: 0;
+    margin-left: 0;
+  }
+}
+
+.formItemCustom {
+  margin-bottom: 10px;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  height: 100vh;
+}
